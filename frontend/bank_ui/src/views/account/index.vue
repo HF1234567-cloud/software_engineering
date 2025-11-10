@@ -1,11 +1,11 @@
 <script setup>
-// import index from './views/layout/index.vue'
 
 </script>
 
 <template>
-  <router-view/>
-
+  <div>
+    <div>员工报告管理</div>
+  </div>
 </template>
 
 <style scoped>
