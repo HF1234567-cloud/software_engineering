@@ -18,6 +18,7 @@
     "anxious": "0.0.0-security",
     "axios": "^1.13.2",
     "core-js": "^3.8.3",
+    "echarts": "^6.0.0",
     "element-plus": "^2.11.7",
     "router": "^2.2.0",
     "vue": "^3.2.13",

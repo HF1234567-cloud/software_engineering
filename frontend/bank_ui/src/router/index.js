@@ -9,7 +9,7 @@ import AccountPage from '../views/account/index.vue'
 import UserPage from '../views/user/index.vue'
 import TransactionPage from '../views/transaction/index.vue'
 
-
+import AdminPage from '../views/admin/index.vue'
 
 const routes = [
   // open root path to login page
@@ -49,6 +49,11 @@ const routes = [
         path: '/transaction',
         name: 'transaction',
         component: TransactionPage
+      },
+      {
+        path: '/admin',
+        name: 'admin',
+        component: AdminPage
       }
     
 

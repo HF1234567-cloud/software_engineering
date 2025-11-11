@@ -1,46 +1,41 @@
 <template>
-  <div class="app-root"> <!-- 新增最外层容器，控制背景层级 -->
-    <!-- NAVBAR -->
- 
-
-    <!-- 背景模糊层（放在最底层，仅做模糊效果） -->
+  <div class="app-root">
     <div class="background"></div>
 
-    <!-- 登录注册容器（放在背景层上方，保持原视觉层次） -->
     <div class="container">
       <div class="item">
         <h2 class="logo"><i class="bx bxl-xing"></i>BankEase</h2>
         <div class="text-item">
           <h2>Welcome! <br /><span>To Our BankEase</span></h2>
-          <p>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit,
-            repellendus?
-          </p>
-          
+          <p>Connect to your digital banking platform securely.</p>
         </div>
       </div>
 
-      <!-- 登录与注册部分 -->
+      <!-- 登录注册区 -->
       <div class="login-section" :class="{ active: isRegisterActive }">
         <!-- 登录 -->
         <div class="form-box login">
-          <form @submit.prevent>
+          <form @submit.prevent="handleLogin">
             <h2>Sign In</h2>
             <div class="input-box">
-              <span class="icon"><i class="bx bxs-envelope"></i></span>
-              <input type="email" required />
-              <label>Email</label>
+              <span class="icon"><i class="bx bxs-user"></i></span>
+              <input v-model="loginForm.username" type="text" required />
+              <label>Username</label>
             </div>
             <div class="input-box">
               <span class="icon"><i class="bx bxs-lock-alt"></i></span>
-              <input type="password" required />
+              <input v-model="loginForm.password" type="password" required />
               <label>Password</label>
             </div>
+
             <div class="remember-password">
-              <label><input type="checkbox" />Remember Me</label>
+              <label :class="{ 'checkbox-error': !loginForm.rememberChecked && loginError }">
+                <input type="checkbox" v-model="loginForm.rememberChecked" />
+                Remember Me
+              </label>
               <a href="#">Forget Password</a>
             </div>
-            <!-- 还原原按钮文字 -->
+
             <button class="btn" type="submit">Login In</button>
             <div class="create-account">
               <p>
@@ -53,29 +48,32 @@
 
         <!-- 注册 -->
         <div class="form-box register">
-          <form @submit.prevent>
+          <form @submit.prevent="handleRegister">
             <h2>Sign Up</h2>
             <div class="input-box">
               <span class="icon"><i class="bx bxs-user"></i></span>
-              <input type="text" required />
+              <input v-model="registerForm.username" type="text" required />
               <label>Username</label>
             </div>
             <div class="input-box">
-              <span class="icon"><i class="bx bxs-envelope"></i></span>
-              <input type="email" required />
-              <label>Email</label>
+              <span class="icon"><i class="bx bx-credit-card-alt bx-rotate-90 bx-flip-vertical"></i></span>
+              <input v-model="registerForm.card" type="text" required />
+              <label>Card</label>
             </div>
             <div class="input-box">
               <span class="icon"><i class="bx bxs-lock-alt"></i></span>
-              <input type="password" required />
+              <input v-model="registerForm.password" type="password" required />
               <label>Password</label>
             </div>
-            <!-- 还原原勾选文本 -->
+
             <div class="remember-password">
-              <label><input type="checkbox" />I agree with this statment</label>
+              <label :class="{ 'checkbox-error': !registerForm.agreed && registerError }">
+                <input type="checkbox" v-model="registerForm.agreed" />
+                I agree with this statement
+              </label>
             </div>
-            <!-- 还原原按钮文字 -->
-            <button class="btn" type="submit">Login In</button>
+
+            <button class="btn" type="submit">Sign Up</button>
             <div class="create-account">
               <p>
                 Already Have An Account?
@@ -91,21 +89,119 @@
 
 <script setup>
 import { ref } from "vue";
+import axios from "axios";
+import { message } from "ant-design-vue";
+import "ant-design-vue/dist/reset.css"; // 确保样式加载
 
 const isRegisterActive = ref(false);
 
+// --- 登录表单数据 ---
+const loginForm = ref({
+  username: "",
+  password: "",
+  rememberChecked: false,
+});
+const loginError = ref(false);
+
+// --- 注册表单数据 ---
+const registerForm = ref({
+  username: "",
+  password: "",
+  card: "",
+  agreed: false,
+});
+const registerError = ref(false);
+
+// --- 切换 ---
 const toggleToRegister = () => {
   isRegisterActive.value = true;
 };
-
 const toggleToLogin = () => {
   isRegisterActive.value = false;
 };
+
+// --- 登录逻辑 ---
+const handleLogin = async () => {
+  if (!loginForm.value.rememberChecked) {
+    loginError.value = true;
+    message.warning("请勾选 'Remember Me' 后再登录！");
+    return;
+  }
+
+  try {
+    message.loading({ content: "正在登录中...", key: "login" });
+    const res = await axios.post("http://127.0.0.1:5003/login", {
+      username: loginForm.value.username,
+      password: loginForm.value.password,
+      lasttime: new Date().toISOString(),
+    });
+
+    if (res.status === 200) {
+      localStorage.setItem('username', res.data.username)
+      window.location.href = "/home";
+     
+    }
+  } catch (err) {
+    message.error({
+      content: err.response?.data?.message || "网络错误，请检查服务器连接",
+      key: "login",
+    });
+  }
+};
+
+// --- 注册逻辑 ---
+const handleRegister = async () => {
+  if (!registerForm.value.agreed) {
+    registerError.value = true;
+    message.warning("请先勾选 'I agree with this statement' 后再注册！");
+    return;
+  }
+
+  try {
+    message.loading({ content: "正在注册中...", key: "register" });
+    const res = await axios.post("http://127.0.0.1:5003/sign", {
+      username: registerForm.value.username,
+      password: registerForm.value.password,
+      card: registerForm.value.card,
+    });
+
+    if (res.status === 201) {
+      message.success({ content: "注册成功，请登录！", key: "register" });
+      registerForm.value = {
+        username: "",
+        password: "",
+        card: "",
+        agreed: false,
+      };
+      registerError.value = false;
+      isRegisterActive.value = false;
+     
+    }
+  } catch (err) {
+    message.error({
+      content: err.response?.data?.message || "网络错误，请检查服务器连接",
+      key: "register",
+    });
+  }
+};
 </script>
+
 
 <style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;1,500&display=swap");
 @import url("https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css");
+.checkbox-error {
+  color: #ff4444;
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
 
 * {
   margin: 0;
