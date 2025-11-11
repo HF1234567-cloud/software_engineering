@@ -1,19 +1,7 @@
 <template>
   <div class="app-root"> <!-- 新增最外层容器，控制背景层级 -->
     <!-- NAVBAR -->
-    <header class="header">
-      <nav class="navbar">
-        <a href="#">Home</a>
-        <a href="#">Portfolio</a>
-        <a href="#">About</a>
-        <a href="#">Contact</a>
-        <a href="#">Help</a>
-      </nav>
-      <form class="search-bar">
-        <input type="text" placeholder="Search..." />
-        <button type="button"><i class="bx bx-search"></i></button>
-      </form>
-    </header>
+ 
 
     <!-- 背景模糊层（放在最底层，仅做模糊效果） -->
     <div class="background"></div>
@@ -21,20 +9,14 @@
     <!-- 登录注册容器（放在背景层上方，保持原视觉层次） -->
     <div class="container">
       <div class="item">
-        <h2 class="logo"><i class="bx bxl-xing"></i>Hash Techie</h2>
+        <h2 class="logo"><i class="bx bxl-xing"></i>BankEase</h2>
         <div class="text-item">
-          <h2>Welcome! <br /><span>To Our Channel</span></h2>
+          <h2>Welcome! <br /><span>To Our BankEase</span></h2>
           <p>
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit,
             repellendus?
           </p>
-          <div class="social-icon">
-            <a href="#"><i class="bx bxl-facebook"></i></a>
-            <a href="#"><i class="bx bxl-twitter"></i></a>
-            <a href="#"><i class="bx bxl-youtube"></i></a>
-            <a href="#"><i class="bx bxl-instagram"></i></a>
-            <a href="#"><i class="bx bxl-linkedin"></i></a>
-          </div>
+          
         </div>
       </div>
 
@@ -152,7 +134,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: url("@/assets/backgroun3.jpg") no-repeat; /* 统一图片路径（与container一致） */
+  background: url("@/assets/01.jpg") no-repeat; /* 统一图片路径（与container一致） */
   background-position: center;
   background-size: cover;
   filter: blur(10px);/* 恢复原模糊效果 */
@@ -239,10 +221,10 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
-  height: 550px;
+  width: 80%;
+  height: 500px;
   margin-top: 20px;
-  background: url("@/assets/backgroun3.jpg") no-repeat; /* 统一图片路径，与背景图一致 */
+  background: url("@/assets/01.jpg") no-repeat; /* 统一图片路径，与背景图一致 */
   background-position: center;
   background-size: cover;
   border-radius: 20px;
@@ -402,7 +384,7 @@ body {
 
 /* 8. 按钮：还原原颜色和质感 */
 .btn {
-  background: #f72d7a; /* 还原原按钮红色 */
+  background: #3a2df7; /* 还原原按钮红色 */
   width: 100%;
   height: 45px;
   outline: none;
@@ -415,7 +397,7 @@ body {
   transition: background 0.3s ease; /* 新增按钮 hover 过渡，还原原交互感 */
 }
 .btn:hover {
-  background: #e02468; /* 按钮 hover 深色变化，还原原质感 */
+  background: #421ed3; /* 按钮 hover 深色变化，还原原质感 */
 }
 
 /* 9. 切换账号文本：保持原样式 */

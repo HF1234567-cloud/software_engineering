@@ -9,9 +9,12 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@ant-design/icons": "~5.6.1",
+    "@ant-design/icons-vue": "^7.0.1",
     "@element-plus/icons-vue": "^2.3.2",
     "@vueuse/motion": "^3.0.3",
     "animate.css": "^4.1.1",
+    "ant-design-vue": "^4.2.6",
     "anxious": "0.0.0-security",
     "axios": "^1.13.2",
     "core-js": "^3.8.3",

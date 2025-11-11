@@ -9,12 +9,15 @@ import "element-plus/dist/index.css";
 import { MotionPlugin } from "@vueuse/motion";
 import axios from 'axios';
 import 'element-plus/dist/index.css';
+import Antd from 'ant-design-vue'
+import 'ant-design-vue/dist/reset.css'
 axios.defaults.withCredentials = true;  // 允许跨域携带凭证
 
 // import './assets/main.css'
 
 const app = createApp(App)
 app.use(router)
+app.use(Antd)
 app.use(ElementPlus, {
   locale: zhCn,
 })

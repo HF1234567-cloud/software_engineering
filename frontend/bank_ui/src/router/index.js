@@ -6,6 +6,7 @@ import LoginPage from '../views/login/index.vue'
 import LayoutPage from '../views/layout/index.vue'
 import HomePage from '../views/home/index.vue'
 import AccountPage from '../views/account/index.vue'
+import UserPage from '../views/user/index.vue'
 import TransactionPage from '../views/transaction/index.vue'
 
 
@@ -38,8 +39,14 @@ const routes = [
         name: 'account',
         component: AccountPage
       },
+   
       {
-        path: '/transacation',
+        path: '/user',
+        name: 'user',
+        component: UserPage
+      },
+      {
+        path: '/transaction',
         name: 'transaction',
         component: TransactionPage
       }
