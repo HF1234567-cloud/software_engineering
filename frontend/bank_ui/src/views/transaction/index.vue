@@ -13,6 +13,19 @@
 
     <!-- 三功能区 -->
     <div class="actions-grid">
+      <!-- 查询余额 -->
+      <a-card hoverable class="action-card">
+        <template #title>余额查询</template>
+        <p class="balance-result">当前余额为：</p>
+        <p class="balance-amount">{{ balance.toFixed(2) }} 元</p>
+        <a-button
+          type="default"
+          shape="round"
+          @click="refreshBalance"
+        >
+          🔄 刷新余额
+        </a-button>
+      </a-card>
       <!-- 存款 -->
       <a-card hoverable class="action-card">
         <template #title>存款</template>
@@ -53,19 +66,7 @@
         </a-button>
       </a-card>
 
-      <!-- 查询余额 -->
-      <a-card hoverable class="action-card">
-        <template #title>余额查询</template>
-        <p class="balance-result">当前余额为：</p>
-        <p class="balance-amount">{{ balance.toFixed(2) }} 元</p>
-        <a-button
-          type="default"
-          shape="round"
-          @click="refreshBalance"
-        >
-          🔄 刷新余额
-        </a-button>
-      </a-card>
+      
     </div>
   </div>
 </template>
@@ -170,8 +171,12 @@ const refreshBalance = () => {
 .action-card {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
+
   border-radius: 12px;
   transition: transform 0.3s, box-shadow 0.3s;
+}
+:deep(.ant-card-head-title) {
+  color: #fff;
 }
 
 .action-card:hover {

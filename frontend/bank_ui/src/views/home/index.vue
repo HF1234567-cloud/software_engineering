@@ -9,10 +9,10 @@
         <!-- 左侧内容 -->
         <div class="hero-copy">
           <h1 class="hero-title">
-            医疗知识问答系统
+            BankEase储蓄系统
           </h1>
           <p class="hero-paragraph">
-            多维度知识图谱可视化，结合自然语言问答与医疗数据洞察。
+            一站式银行服务平台，集成智能问答与数据可视化，提升您的金融体验。
           </p>
           <div class="hero-cta">
             <el-button type="primary" @click="scrollToFeatures">立即体验</el-button>
@@ -31,8 +31,9 @@
           <div class="home-figure-box home-figure-box-07"></div>
           <!-- 方块内交互按钮 -->
           <div class="home-figure-box home-figure-box-routes">
-            <el-button class="btn--blue hero-btn" type="info" size="large" @click="goTo('/ai')"> AI 问答 </el-button>
-            <el-button class="btn--blue hero-btn" type="info" size="large" @click="goTo('/wordcloud')"> 词云分析 </el-button>
+            <el-button class="btn--blue hero-btn" type="info" size="large" @click="goTo('/transaction')"> 存取款管理 </el-button>
+            <el-button class="btn--blue hero-btn" type="info" size="large" @click="goTo('/account')"> 账户管理 </el-button>
+            <el-button class="btn--blue hero-btn" type="info" size="large" @click="goTo('/user')"> 用户管理 </el-button>
           </div>
      
         </div>
@@ -95,8 +96,8 @@ onMounted(() => {
 <style lang="less" scoped>
 .home {
   font-family: "Microsoft YaHei", sans-serif;
-  background: #b6ddf57c;
-  color: #fff;
+  background:radial-gradient(circle at 20% 30%, #0F172A, #060C1A 80%);
+  color: #F8FAFC;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -107,7 +108,7 @@ onMounted(() => {
   display: flex;
   align-items: flex-start; /* 从居中改为顶部对齐 */
   justify-content: center;
-  background-image: url('@/assets/backgroun3.jpg');
+  background-image: url('@/assets/02.jpg');
   background-size: cover;
   padding-top: 10px; /* 加上内边距控制距离顶部的高度 */
   box-sizing: border-box;
@@ -129,7 +130,8 @@ onMounted(() => {
 .hero-title {
   font-size: 48px;
   font-weight: 700;
-  color: #777575;
+  color: #00E0FF;
+  text-shadow: 0 0 20px rgba(0, 224, 255, 0.5);
   margin-bottom: 16px;
 
   &-highlight {
@@ -139,7 +141,7 @@ onMounted(() => {
 
 .hero-paragraph {
   font-size: 18px;
-  color: #a0a0a0;
+  color:  #CBD5E1;
   margin-bottom: 24px;
 }
 /* 右侧功能按钮样式 */
@@ -151,15 +153,17 @@ onMounted(() => {
   padding: 20px;
 }
 
-.hero-cta {
-  .el-button {
-    border-radius: 30px;
-    font-size: 16px;
-    padding: 20px 28px;
-    background: linear-gradient(135deg, #a2c6f8, #6e99d6);
-    color: #fff;
-    border: none;
-  }
+.hero-cta .el-button {
+  border-radius: 30px;
+  font-size: 16px;
+  padding: 20px 28px;
+  background: linear-gradient(90deg, #0072FF, #00E0FF);
+  box-shadow: 0 0 15px rgba(0, 224, 255, 0.5);
+  transition: all 0.3s ease;
+}
+.hero-cta .el-button:hover {
+  box-shadow: 0 0 25px rgba(0, 224, 255, 0.9);
+  transform: translateY(-2px);
 }
 
 /* === 动画方块部分 === */
@@ -171,87 +175,109 @@ onMounted(() => {
   perspective: 800px;
 }
 
+/* === 方块基底样式 === */
 .home-figure-box {
   position: absolute;
-  opacity: 0;
-  transform-origin: center;
-  transition: all 0.5s ease;
-  border-radius: 6px;
-  z-index: 2;
-  flex-direction: column;
+  border-radius: 12px;
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 224, 255, 0.15);
+  transition: all 0.6s ease;
 }
+
+/* 悬浮时轻微放大 + 光晕 */
+.home-figure-box:not(.home-figure-box-routes):hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 24px rgba(0, 224, 255, 0.4);
+}
+
+
 .home-figure-box-routes {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 16px;
   align-items: flex-end;
-  z-index: 3; /* 确保在方块上方 */
+  z-index: 99; /* 确保在所有方块之上 */
   left: 40%;
-  top: 50%;
+  top: 40%;
   transform: translate(-50%, -50%);
   min-width: 160px;
   text-align: center;
-  animation: fadeIn 0.8s ease forwards 1.2s; /* 最后显示 */
+  animation: fadeIn 0.8s ease forwards 1.2s;
+  
+  /* 核心：清除继承的方块样式 */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 .hero-btn {
-  width: 150px ; 
+  width: 170px;
+  border-radius: 10px;
+  font-weight: 600;
+  background: linear-gradient(90deg, #0072FF, #00E0FF);
+  color: white;
+  border: none;
+  transition: all 0.3s ease;
 }
+
+
 /* 方块1：浅蓝到更浅蓝渐变，适配背景 */
 .home-figure-box-01 {
-  width: 160px;
+  width: 180px;
   height: 160px;
-  background: linear-gradient(45deg, #a2c6f8, rgba(162, 198, 248, 0.2));
+  background: rgba(0, 114, 255, 0.15); // 主色渐变
   left: 60%;
   top: 10%;
 }
-/* 方块2：蓝到更浅蓝渐变，适配背景 */
+
 .home-figure-box-02 {
   width: 120px;
   height: 120px;
-  background: linear-gradient(45deg, #6e99d6, rgba(110, 153, 214, 0.2));
-  left: 10%;
+  background: rgba(0, 224, 255, 0.2); // 深蓝渐变
+  left: 5%;
   top: 40%;
 }
-/* 方块3：选取背景中的浅蓝 */
+
 .home-figure-box-03 {
-  width: 100px;
+  width: 120px;
   height: 100px;
-  background: #a2d7f8;
+  background:rgba(0, 224, 255, 0.25); // 浅蓝，增加层次
   left: 30%;
-  top: 60%;
+  top: 55%;
 }
-/* 方块4：选取背景中的稍深一点的蓝 */
+// /* 方块4：选取背景中的稍深一点的蓝 */
 .home-figure-box-04 {
-  width: 60px;
-  height: 60px;
-  background: #8abff8;
+  width: 80px;
+  height: 80px;
+  background:rgba(0, 114, 255, 0.3);
   left: 80%;
   top: 60%;
 }
-/* 方块5：较浅的蓝，适配背景 */
+// /* 方块5：较浅的蓝，适配背景 */
 .home-figure-box-05 {
   width: 200px;
   height: 160px;
-  background: #c9e0fc;
+  background: rgba(0, 114, 255, 0.1);
   left: 15%;
   top: 20%;
 }
-/* 方块6：选取背景中的蓝紫色调，更协调 */
+// /* 方块6：选取背景中的蓝紫色调，更协调 */
 .home-figure-box-06 {
   width: 100px;
   height: 80px;
-  background: #91c0ec;
+  background: rgba(0, 224, 255, 0.2);
   left: 85%;
   top: 35%;
 }
 /* 方块7：选取背景中的蓝，增加层次感 */
 .home-figure-box-07 {
-  width: 60px;
-  height: 50px;
-  background: #b6ddf5;
+  width: 100px;
+  height: 80px;
+  background: rgba(0, 224, 255, 0.3);
   left: 45%;
-  top: 80%;
+  top: 75%;
 }
 
 /* === 动画触发 === */
@@ -276,33 +302,34 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
   padding: 80px 40px;
-  background: #fff;
-  color: #333;
-  text-align: center;
+  background: #1E293B; // 深灰背景，与主背景分层
+  color: #F8FAFC; // 浅灰文字
 
   .feature-card {
-    background: #fff;
+    background: #0F172A; // 深黑蓝卡片，与背景区分
     border-radius: 16px;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); // 深色阴影更协调
     padding: 32px 24px;
     transition: all 0.8s ease;
 
     &:hover {
       transform: translateY(-6px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 10px 20px rgba(0, 224, 255, 0.3); // 霓虹蓝阴影，强化交互
     }
 
     .feature-icon {
       font-size: 40px;
+      color: #00E0FF; // 霓虹蓝图标，突出功能
       margin-bottom: 16px;
     }
     .feature-title {
       font-size: 22px;
       font-weight: 600;
+      color: #F8FAFC;
       margin-bottom: 10px;
     }
     .feature-desc {
-      color: #666;
+      color: #CBD5E1; // 中灰描述，次要信息弱化
       font-size: 15px;
     }
   }

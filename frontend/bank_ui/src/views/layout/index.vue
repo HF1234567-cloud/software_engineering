@@ -5,7 +5,7 @@
       <!-- ✅ Logo区 -->
       <div class="logo">
         <i class="bx bxl-xing"></i>
-        <span v-if="!collapsed" class="logo-text">BankEase</span>
+        <span v-if="!collapsed" class="logo-text">易银行</span>
       </div>
 
       <a-menu

@@ -17,7 +17,7 @@
       <!-- 挂失 -->
       <a-card hoverable class="action-card loss">
         <template #title>挂失</template>
-        <p>若账户遗失，可申请挂失以防止被他人盗用。</p>
+        <p>若账户遗失，可申请挂失防止被他人盗用。</p>
         <a-button
           type="primary"
           block
@@ -128,6 +128,18 @@ const freezeAccount = () => {
   border-radius: 16px;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
 }
+
+:deep(.freeze .ant-card-head-title) {
+  color: #fff;
+}
+
+:deep(.loss .ant-card-head-title) {
+  color: #fff;
+}
+:deep(.close .ant-card-head-title) {
+  color: #fff;
+}
+
 
 .page-title {
   color: #00e0ff;
