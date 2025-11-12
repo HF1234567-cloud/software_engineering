@@ -483,6 +483,69 @@ def get_all_users():
         return jsonify(user_list), 200
     except Exception as e:
         return jsonify({'message': f'获取用户列表失败：{str(e)}'}), 500
+
+
+# ---------------------- 图表统计接口：账户状态统计（饼图） ----------------------
+@app.route('/get_pie_chart_data', methods=['GET'])
+def get_pie_chart_data():
+    try:
+        # 从数据库查询各状态用户数量
+        total_users = LoginList.query.count()
+        using_count = LoginList.query.filter_by(isvalid='使用中').count()
+        loss_count = LoginList.query.filter_by(isvalid='挂失').count()
+        freeze_count = LoginList.query.filter_by(isvalid='冻结').count()
+        close_count = LoginList.query.filter_by(isvalid='已销户').count()
+        
+        # 返回与前端饼图格式一致的数据
+        return jsonify({
+            'data': [
+                {'value': using_count, 'name': '使用中'},
+                {'value': loss_count, 'name': '挂失'},
+                {'value': freeze_count, 'name': '冻结'},
+                {'value': close_count, 'name': '已销户'}
+            ],
+            'total': total_users  # 可选：返回总用户数，用于前端显示
+        }), 200
+    except Exception as e:
+        return jsonify({'message': f'获取饼图数据失败：{str(e)}'}), 500
+
+# ---------------------- 管理员恢复用户账户接口（将 isvalid 改为 '使用中'） ----------------------
+@app.route('/restore_user', methods=['POST'])
+def restore_user():
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        auditor = data.get('auditor')  # 审核人（管理员用户名）
+
+        if not user_id or not auditor:
+            return jsonify({'message': '缺少 user_id 或 auditor 参数'}), 400
+
+        # 查询用户
+        user = LoginList.query.get(user_id)
+        if not user:
+            return jsonify({'message': '用户不存在'}), 404
+
+        # 检查当前状态是否可恢复
+        if user.isvalid == '使用中':
+            return jsonify({'message': '该用户已在使用中，无需恢复'}), 400
+        if user.isvalid == '已销户':
+            return jsonify({'message': '已销户账户无法恢复'}), 400
+        if user.isvalid not in ['挂失', '冻结']:
+            return jsonify({'message': f'当前状态为「{user.isvalid}」，不支持恢复操作'}), 400
+
+        # 执行恢复：设置为“使用中”
+        user.isvalid = '使用中'
+        db.session.commit()
+
+        return jsonify({
+            'message': f'用户 {user.username} 账户已成功恢复为正常使用状态',
+            'restored_by': auditor
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'message': f'恢复用户失败：{str(e)}'}), 500
+
         
 # 运行服务器
 if __name__ == '__main__':

@@ -120,6 +120,7 @@
         </div>
       </div>
     </a-card>
+    
 
     <!-- 用户信息表 -->
     <a-card class="table-card" bordered={false}>
@@ -131,24 +132,42 @@
         :columns="userColumns"
         row-key="id"
         bordered
-        :pagination="{ pageSize: 5 }"
+        :pagination="{ pageSize: 10 }"
         :loading="loadingUsers"
       >
         <!-- 自定义列渲染 -->
         <template #bodyCell="props">
-          <!-- 账户状态列 -->
-          <template v-if="props.column.dataIndex === 'isvalid'">
-            <span :style="getStatusColor(props.record.isvalid)">{{ props.record.isvalid }}</span>
-          </template>
-          <!-- 账户余额列 -->
-          <template v-else-if="props.column.dataIndex === 'balance'">
-            ¥{{ props.record.balance.toFixed(2) }}
-          </template>
-          <!-- 最后登录时间列 -->
-          <template v-else-if="props.column.dataIndex === 'lasttime'">
-            {{ formatDate(props.record.lasttime) }}
-          </template>
-        </template>
+  <!-- 账户状态列 -->
+  <template v-if="props.column.dataIndex === 'isvalid'">
+    <span :style="getStatusColor(props.record.isvalid)">{{ props.record.isvalid }}</span>
+  </template>
+  <!-- 账户余额列 -->
+  <template v-else-if="props.column.dataIndex === 'balance'">
+    ¥{{ props.record.balance.toFixed(2) }}
+  </template>
+  <!-- 最后登录时间列 -->
+  <template v-else-if="props.column.dataIndex === 'lasttime'">
+    {{ formatDate(props.record.lasttime) }}
+  </template>
+  <!-- 👇 新增：操作列 -->
+  <template v-else-if="props.column.dataIndex === 'operation'">
+    <div class="operate-buttons">
+      <template v-if="['挂失', '冻结'].includes(props.record.isvalid)">
+        <a-button 
+          type="primary" 
+          size="small" 
+          @click="handleRestoreUser(props.record)"
+        >
+          恢复正常使用
+        </a-button>
+      </template>
+      <template v-else>
+        <span style="color: #999;">—</span>
+      </template>
+    </div>
+  </template>
+</template>
+      
       </a-table>
     </a-card>
   </div>
@@ -202,9 +221,39 @@ const userColumns = [
   { title: "银行卡号", dataIndex: "card", width: 180 },
   { title: "账户状态", dataIndex: "isvalid", width: 120 },
   { title: "账户余额", dataIndex: "balance", width: 120 },
-  { title: "最后登录时间", dataIndex: "lasttime", width: 180 }
+  { title: "最后登录时间", dataIndex: "lasttime", width: 180 },
+  // 👇 新增操作列
+  { title: "操作", dataIndex: "operation", width: 150 }
 ];
+// 恢复用户状态（挂失/冻结 → 使用中）
+const handleRestoreUser = async (user) => {
+  const { id, username, isvalid } = user;
 
+  Modal.confirm({
+    title: '恢复账户状态',
+    content: `确定要将用户【${username}】的账户从“${isvalid}”恢复为“使用中”吗？`,
+    okText: '确认恢复',
+    cancelText: '取消',
+    onOk: async () => {
+      try {
+        const res = await axios.post('http://127.0.0.1:5003/restore_user', {
+          user_id: id,
+          auditor: adminName.value
+        });
+        message.success(res.data.message || '账户已恢复为正常使用');
+        await fetchAllUsers(); // 刷新用户列表
+        // 可选：刷新图表
+        setTimeout(() => {
+          if (pieChart) pieChart.dispose();
+          if (lineChart) lineChart.dispose();
+          initCharts();
+        }, 300);
+      } catch (err) {
+        message.error(err.response?.data?.message || '恢复账户失败');
+      }
+    }
+  });
+};
 // 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -251,56 +300,45 @@ const getStatusColor = (status) => {
     default: return { color: '#fff' };
   }
 };
-
+// 获取饼图数据（账户状态统计）
+const fetchPieChartData = async () => {
+  try {
+    const res = await axios.get('http://127.0.0.1:5003/get_pie_chart_data', { timeout: 5000 });
+    return res.data.data; // 返回后端的饼图数据数组
+  } catch (err) {
+    message.error('获取账户状态统计数据失败');
+    return []; // 失败时返回空数组，避免图表报错
+  }
+};
 // 初始化图表
-const initCharts = () => {
+const initCharts = async() => {
+  // 先获取后端数据，再初始化图表
+  const pieData = await fetchPieChartData();
+
   nextTick(() => {
-    // 初始化饼图
+    // 初始化饼图（使用后端数据）
     if (pieChartRef.value) {
+      pieChart?.dispose();
       pieChart = echarts.init(pieChartRef.value);
-      const pieOption = {
-        tooltip: {
-          trigger: 'item'
-        },
-        legend: {
-          top: '5%',
-          left: 'center'
-        },
-        series: [
-          {
-            name: '账户状态',
-            type: 'pie',
-            radius: ['40%', '70%'],
-            avoidLabelOverlap: false,
-            itemStyle: {
-              borderRadius: 10,
-              borderColor: '#fff',
-              borderWidth: 2
-            },
-            label: {
-              show: false,
-              position: 'center'
-            },
-            emphasis: {
-              label: {
-                show: true,
-                fontSize: 20,
-                fontWeight: 'bold'
-              }
-            },
-            labelLine: {
-              show: false
-            },
-            data: [
-              { value: calculateStatusCount('使用中'), name: '使用中' },
-              { value: calculateStatusCount('挂失'), name: '挂失' },
-              { value: calculateStatusCount('冻结'), name: '冻结' },
-              { value: calculateStatusCount('已销户'), name: '已销户' }
-            ]
-          }
-        ]
-      };
-      pieChart.setOption(pieOption);
+      pieChart.setOption({
+        tooltip: { trigger: 'item' },
+        legend: { top: '4%', left: 'center' ,clor: '#fff',textStyle: {
+                    color: '#fff' // 设置提示框字体颜色为白色
+                }},
+        series: [{
+          name: '账户状态',
+          type: 'pie',
+          radius: ['40%', '70%'],
+          avoidLabelOverlap: false,
+          itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
+          label: { show: false, position: 'center',textStyle: {
+                    color: '#fff' // 设置提示框字体颜色为白色
+                }},
+          emphasis: { label: { show: true, fontSize: 20, fontWeight: 'bold' } },
+          labelLine: { show: false },
+          data: pieData // ✅ 来自后端
+        }]
+      });
     }
 
     // 初始化折线图
@@ -308,34 +346,60 @@ const initCharts = () => {
       lineChart = echarts.init(lineChartRef.value);
       const lineOption = {
         title: {
-          text: '每日交易统计'
+          text: '每日交易统计',
+          textStyle: {
+            color: '#fff' // 设置标题字体颜色为白色
+          }
         },
         tooltip: {
-          trigger: 'axis'
+          trigger: 'axis',
+          textStyle: {
+            color: '#fff' // 设置提示框字体颜色为白色
+          }
         },
         legend: {
-          data: ['存款', '取款']
+          data: ['存款', '取款'],
+          bottom: '-4px', // 距离底部 10px
+          left: 'center',
+          orient: 'horizontal',
+          textStyle: {
+                    color: '#fff' // 设置提示框字体颜色为白色
+                }
         },
         grid: {
           left: '3%',
           right: '4%',
-          bottom: '3%',
-          containLabel: true
+          bottom: '10%',
+          containLabel: true,
+         
         },
         toolbox: {
           feature: {
             saveAsImage: {}
+          },
+          iconStyle: {
+            borderColor: '#fff' // 设置工具箱图标颜色为白色
           }
         },
         xAxis: {
           type: 'category',
           boundaryGap: false,
-          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+          axisLabel: {
+            textStyle: {
+              color: '#fff' // 设置 x 轴字体颜色为白色
+            }
+          }
         },
         yAxis: {
           type: 'value',
           axisLabel: {
             formatter: '¥{value}'
+          },
+          axisLabel: {
+            textStyle: {
+              color: '#fff' // 设置 y 轴字体颜色为白色
+            }
           }
         },
         series: [
@@ -370,10 +434,10 @@ const calculateStatusCount = (status) => {
 };
 
 // 页面加载时初始化数据
-onMounted(() => {
-  fetchPendingApplies(); // 获取待审核申请
-  fetchAllUsers(); // 获取所有用户信息
-  initCharts(); // 初始化图表
+onMounted(async () => {
+  await fetchPendingApplies();
+  await fetchAllUsers();
+  await initCharts(); // ✅
 });
 
 // 处理分页变化
@@ -403,17 +467,17 @@ const resetFilters = () => {
 
 // 刷新待审核列表
 const refreshPending = () => {
+  message.info('正在刷新数据...');
   fetchPendingApplies();
-  message.info('正在刷新待审核列表...');
-  // 重新初始化图表
-  setTimeout(() => {
-    if (pieChart) {
-      pieChart.dispose();
+  fetchAllUsers();
+  
+  // 重新初始化图表（注意：不能直接 await，因为 refreshPending 不是 async）
+  setTimeout(async () => {
+    try {
+      await initCharts(); // ✅ 现在可以 await 了
+    } catch (err) {
+      console.error('图表初始化失败:', err);
     }
-    if (lineChart) {
-      lineChart.dispose();
-    }
-    initCharts();
   }, 500);
 };
 
@@ -472,18 +536,13 @@ const handleAudit = async (record, auditResult) => {
           auditor: adminName.value
         });
         message.success(res.data.message);
-        // 审核后刷新列表
         fetchPendingApplies();
         fetchAllUsers();
-        // 重新初始化图表
-        setTimeout(() => {
-          if (pieChart) {
-            pieChart.dispose();
-          }
-          if (lineChart) {
-            lineChart.dispose();
-          }
-          initCharts();
+        // 重新获取图表数据并渲染
+        setTimeout(async () => {
+          if (pieChart) pieChart.dispose();
+          if (lineChart) lineChart.dispose();
+          await initCharts();
         }, 500);
       } catch (err) {
         message.error(err.response?.data?.message || `${auditResult}申请失败`);
@@ -662,6 +721,13 @@ window.addEventListener('resize', () => {
 </script>
 
 <style scoped>
+
+:deep(.ant-empty-normal .ant-empty-description) {
+  color: #fff !important;
+}
+
+
+
 .admin-container {
   padding: 30px;
   color: #fff;
@@ -820,4 +886,30 @@ window.addEventListener('resize', () => {
     padding-top: 10px;
   }
 }
+/* 修改分页组件的上一页、下一页箭头颜色为白色 */
+:deep(.ant-pagination-prev .anticon),
+:deep(.ant-pagination-next .anticon) {
+  color: #fff !important;
+}
+
+/* 当禁用状态（不能翻页）时，颜色改为半透明白 */
+:deep(.ant-pagination-prev.ant-pagination-disabled .anticon),
+:deep(.ant-pagination-next.ant-pagination-disabled .anticon) {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 修改页码数字的颜色 */
+:deep(.ant-pagination-item a) {
+  color: #fff !important;
+}
+
+/* 当前页高亮样式 */
+:deep(.ant-pagination-item-active) {
+  border-color: #00e0ff !important;
+}
+
+:deep(.ant-pagination-item-active a) {
+  color: #00e0ff !important;
+}
+
 </style>

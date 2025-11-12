@@ -30,7 +30,7 @@
       <a-card hoverable class="action-card">
         <template #title>存款</template>
         <a-input
-          v-model="depositAmount"
+          v-model:value="depositAmount"
           placeholder="请输入存款金额（1-100万）"
           prefix="💵"
           type="number"
@@ -52,7 +52,7 @@
       <a-card hoverable class="action-card">
         <template #title>取款</template>
         <a-input
-          v-model="withdrawAmount"
+          v-model:value="withdrawAmount"
           placeholder="请输入取款金额（1-100万）"
           prefix="💸"
           type="number"
@@ -105,8 +105,11 @@ const onDepositInput = (e) => {
 
 // ✅ 存款功能（保持原有逻辑，新增type="number"输入限制）
 const deposit = async () => {
-  const raw = String(depositAmount.value).trim();
+  const raw = String(depositAmount.value).trim(); // 👈 先读原始值
   const amount = Number(raw);
+
+  // 👇 然后再清空（避免后续任何副作用）
+  depositAmount.value = '';
 
   if (!raw || isNaN(amount) || amount <= 0) {
     message.error('请输入有效的存款金额（必须是数字且大于0）');
@@ -122,10 +125,8 @@ const deposit = async () => {
       username: username.value,
       change: amount
     });
-
     balance.value = res.data.balance;
     message.success(`存款成功！+${amount.toFixed(2)} 元`);
-    depositAmount.value = '';
   } catch (err) {
     message.error(err.response?.data?.message || '存款失败，请重试！');
   }
@@ -140,10 +141,11 @@ const onWithdrawInput = (e) => {
 
 // ✅ 取款功能（修复核心问题：去空格+严格数字校验）
 const withdraw = async () => {
-  const raw = String(withdrawAmount.value).trim(); // 去除前后空格
-  const amount = Number(raw); // 严格转数字（比parseFloat更稳定）
+  const raw = String(withdrawAmount.value).trim();
+  const amount = Number(raw);
 
-  // 完整校验逻辑
+  withdrawAmount.value = ''; // 👈 清空放这里，只一次
+
   if (!raw) {
     message.error('请输入取款金额');
     return;
@@ -165,10 +167,9 @@ const withdraw = async () => {
     const res = await axios.post('http://127.0.0.1:5003/update_balance', {
       username: username.value,
       change: -amount,
-    })
+    });
     balance.value = res.data.balance;
     message.success(`取款成功：-${amount.toFixed(2)} 元`);
-    withdrawAmount.value = '';
   } catch (err) {
     message.error(err.response?.data?.message || '取款失败');
   }
